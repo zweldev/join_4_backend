@@ -1,0 +1,13 @@
+.dart_tool/
+.pub/
+.packages
+build/
+.dart_tool/
+.idea/
+.vscode/
+pubspec.lock
+.git
+*.iml
+/.git
+/.gitignore
+/.DS_Store
