@@ -1,14 +1,33 @@
+# Build stage
+
 FROM dart:stable AS build
 
 WORKDIR /app
 
+# Install Dart Frog CLI explicitly (important for CI)
+
+RUN dart pub global activate dart_frog_cli
+
+ENV PATH="/root/.pub-cache/bin:$PATH"
+
+# Copy dependencies first
+
 COPY pubspec.* ./
 RUN dart pub get
 
+# Copy full project
+
 COPY . .
 
-RUN dart run dart_frog_cli:dart_frog build
-RUN dart compile exe .dart_frog/server.dart -o server
+# Build production server
+
+RUN dart_frog build
+
+# Compile NEW output location (IMPORTANT FIX)
+
+RUN dart compile exe build/bin/server.dart -o server
+
+# Runtime stage
 
 FROM debian:bullseye-slim
 
@@ -19,7 +38,6 @@ RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/
 COPY --from=build /app/server ./server
 
 ENV PORT=8080
-
 EXPOSE 8080
 
 CMD ["./server"]
